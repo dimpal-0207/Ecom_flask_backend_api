@@ -1,16 +1,6 @@
-# Ecom_flask_backend_api
-install dependency 
-pip install -r requirements.txt
-
-
-++++run project++++
-python3 app.py
-
-=======flask webapp deploy using ci/cd pipeline on jenkins follow steps are use to build declarative pipeline on aws ec2  =========
-fully ci/cd_jenkins_declarative_pipeline_script
 pipeline{
-    agent any 
-    //1.clone code from github repository 
+    agent any
+    //1.clone code from github repository
     stages{
         stage("clone code"){
             steps{
@@ -18,14 +8,14 @@ pipeline{
                 git url:"https://github.com/dimpal-0207/Ecom_flask_backend_api.git", branch: "master"
             }
         }
-        //2.build docker image from github repository 
+        //2.build docker image from github repository
         stage("build"){
              steps{
                 echo "builing the code"
-                sh "docker build -t flask_app ." 
+                sh "docker build -t flask_app ."
             }
         }
-        //3. push docker image on docker diemon repository using global credential on jenkins  
+        //3. push docker image on docker diemon repository using global credential on jenkins
         stage("Push to Docker hub"){
              steps {
                 echo "Pushing the image into Docker Hub"
@@ -36,15 +26,15 @@ pipeline{
                 }
             }
         }
-        //4.deploy on ec2 docker container 
+        //4.deploy on ec2 docker container
         stage("Deploy"){
              steps{
                 echo "deploying the container"
                 sh "docker-compose down && docker-compose up -d"
             }
         }
-        
+
     }
 }
-    
-//sh "docker run -d -p 8000:8000 dimpal0207/flask_app:latest" this comment where docker run on port but give error on next build 
+
+// this file is auto attach on jenkins where script option available choose the scm and select git repository url and give filename which is jenkinsfile

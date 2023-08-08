@@ -1,0 +1,7 @@
+version: '3.9'
+services:
+  flask_app:
+    build: .
+    restart: always
+    ports:
+    - "80:80"
