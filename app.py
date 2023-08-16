@@ -315,6 +315,169 @@ def get_products():
     return jsonify(response), 200
 
 
+@app.route('/get_user_list', methods=["GET"])
+def get_user_list():
+    user = mongo.db.users.find()
+    print("====>user", user)
+    user_list =[]
+    for us in user:
+        us['_id'] = str(us['_id'])
+        user_list.append(us)
+    response={
+        "status": 200,
+        "message": "Product list get successfully.",
+        "payload": user_list
+    }
+    return jsonify(response),200
+
+
+@app.route('/category_list', methods=["GET"])
+def get_category_list():
+    category = mongo.db.category.find()
+    print("===>cat", category)
+    category_list=[]
+    for cat in category:
+        cat['_id'] = str(cat['_id'])
+        category_list.append(cat)
+    return jsonify(
+        {
+            "status" : 200,
+            "message ": "category list get successfully",
+            "payload": category_list
+        }
+    )
+
+
+@app.route("/sub_category_list", methods=["GET"])
+def get_subcategory_list():
+    sub_category = mongo.db.subcategory.find()
+    sub_cat_list =[]
+    for sub in sub_category:
+        sub['_id']= str(sub['_id'])
+        sub_cat_list.append(sub)
+        return jsonify(
+            {
+                "status": 200,
+                "message": "sub category list get successfully",
+                "payload": sub_cat_list
+            }
+        )
+
+
+@app.route('/get_product/<string:product_id>', methods=['GET'])
+def get_product_details(product_id):
+    try:
+        product = mongo.db.products.find_one({"_id": ObjectId(product_id)})
+        if product:
+            product['_id'] = str(product['_id'])  # Convert ObjectId to string
+            return jsonify({"status": 200, "message": "Success", "product": [product]}), 200
+        else:
+            return jsonify({"status": 404, "message": "Product not found."}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
+
+
+@app.route('/category_details/<string:product_id>', methods=['GET'])
+def get_category_details(category_id):
+    try:
+        category = mongo.db.category.find_one({"_id": ObjectId(category_id)})
+        if category:
+            category['_id'] = str(category['_id'])  # Convert ObjectId to string
+            return jsonify({"status": 200, "message": "Success", "payload": [category]}), 200
+        else:
+            return jsonify({"status": 404, "message": "Product not found."}), 404
+    except Exception as e:
+        return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
+
+
+@app.route("/sub_cat_details/<string:sub_cat_id>", methods=["GET"])
+def get_subcategory_details(sub_cat_id):
+    try:
+        sub_cat = mongo.db.subcategory.find_one({"_id":ObjectId(sub_cat_id)})
+        if sub_cat:
+            sub_cat['_id'] = str(sub_cat['_id'])
+            return jsonify({"status":200, "message": "success", "payload":[sub_cat]}),200
+        else:
+            return jsonify({"status":404, "message": "Not Found"}),404
+    except  Exception as e:
+        return jsonify({"stastus":400, "message": "Failed", "error":str(e)}), 400
+
+
+@app.route("/delete_user/<string:user_id>", methods=["GET"])
+def delete_user(user_id):
+    try:
+        user = mongo.db.users.delete_one({"_id":ObjectId(user_id)})
+        if user.deleted_count > 0:
+            return jsonify({"status": 200, "message": "User Deleted Successfully"}),200
+        else:
+            return jsonify({"status":404, "message": "Not Found User"}), 404
+    except Exception as e:
+        return jsonify({"status":400, "message":"Failed","error": str(e)}),400
+
+
+
+
+
+#add product with multiple images at once
+# @admin_required
+# @app.route('/add_product', methods=['POST'])
+# def add_product():
+#     try:
+#         data = request.form
+#         name = data.get('name')
+#         price = data.get('price')
+#         description = data.get('description')
+#         category_id = data.get('category_id')
+#         subcategory_id = data.get('subcategory_id')
+#
+#         # Retrieve the list of image files
+#         image_files = request.files.getlist('images')
+#
+#         sizes = request.json.get('sizes', [])
+#         colors = request.json.get('colors', [])
+#
+#         if not all([name, price, description, category_id, subcategory_id, sizes, colors, image_files]):
+#             return jsonify({"message": "All fields are required."}), 400
+#
+#         # Check if the provided category and subcategory IDs exist in the database
+#         if not mongo.db.category.find_one({"_id": ObjectId(category_id)}):
+#             return jsonify({"message": "Invalid category ID."}), 400
+#
+#         if not mongo.db.subcategory.find_one({"_id": ObjectId(subcategory_id)}):
+#             return jsonify({"message": "Invalid subcategory ID."}), 400
+#
+#         # Save the image files and collect their filenames
+#         image_filenames = []
+#         for image in image_files:
+#             filename = f"{ObjectId()}.{image.filename.rsplit('.', 1)[1].lower()}"
+#             image.save(os.path.join('uploads', filename))
+#             image_filenames.append(filename)
+#
+#         # Add the product to the MongoDB collection
+#         product = {
+#             'name': name,
+#             'images': image_filenames,
+#             'price': price,
+#             'description': description,
+#             'category_id': category_id,
+#             'subcategory_id': subcategory_id,
+#             'sizes': sizes,
+#             'colors': colors
+#         }
+#
+#         product_id = mongo.db.products.insert_one(product).inserted_id
+#         product['_id'] = str(product_id)
+#
+#         response = {
+#             "status": 200,
+#             "message": "Product added successfully.",
+#             "payload": product
+#         }
+#
+#         return jsonify(response), 200
+#     except Exception as e:
+#         return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
+
 # #this is the final product add query
 # @admin_required
 # @app.route('/product/add_product', methods=['POST', 'GET'])
@@ -346,7 +509,95 @@ def get_products():
 #
 #         return jsonify({"message": "Product added successfully."}), 200
 
+#all details and also show the category using object id
+# @app.route('/get_product/<string:product_id>', methods=['GET'])
+# def get_product_details(product_id):
+#     try:
+#         product = mongo.db.products.find_one({"_id": ObjectId(product_id)})
+#         if product:
+#             product['_id'] = str(product['_id'])  # Convert ObjectId to string
+#
+#             # Retrieve category details based on the category_id
+#             category_id = product.get('category_id')
+#             category = mongo.db.categories.find_one({"_id": ObjectId(category_id)})
+#             if category:
+#                 category['_id'] = str(category['_id'])  # Convert ObjectId to string
+#                 product['category'] = category
+#
+#             return jsonify({"status": 200, "message": "Success", "product": product}), 200
+#         else:
+#             return jsonify({"status": 404, "message": "Product not found."}), 404
+#     except Exception as e:
+#         return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
 
+
+#
+# @app.route('/get_products', methods=['GET'])
+# def get_products():
+#     try:
+#         # Query parameters
+#         sort_by = request.args.get('sort_by', 'name')  # Default sorting by name
+#         page = int(request.args.get('page', 1))
+#         per_page = int(request.args.get('per_page', 10))
+#         search_query = request.args.get('search_query', '')
+#
+#         # Create a query dictionary based on the search query
+#         query = {}
+#         if search_query:
+#             query['name'] = {'$regex': search_query, '$options': 'i'}
+#
+#         # Retrieve the products with sorting and pagination
+#         products = mongo.db.products.find(query).sort(sort_by).skip((page - 1) * per_page).limit(per_page)
+#
+#         # Convert ObjectId to string and build the response
+#         product_list = []
+#         for product in products:
+#             product['_id'] = str(product['_id'])
+#             product_list.append(product)
+#
+#         return jsonify({"status": 200, "message": "Success", "products": product_list}), 200
+#
+#     except Exception as e:
+#         return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
+
+@app.route('/details_pro', methods=['GET'])
+def details_pro():
+    try:
+        # Get query parameters
+        category = request.args.get('category')
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+        search_query = request.args.get('q', '')
+        min_price = float(request.args.get('min_price', 0))
+        max_price = float(request.args.get('max_price', float('inf')))
+
+        # Build the query based on parameters
+        query = {}
+        if category:
+            query['category_id'] = category
+        if search_query:
+            query['name'] = {'$regex': search_query, '$options': 'i'}
+        query['price'] = {'$gte': min_price, '$lte': max_price}
+
+        # Get total count for pagination
+        total_count = mongo.db.products.count_documents(query)
+
+        # Get products based on query and pagination
+        products = mongo.db.products.find(query).skip((page - 1) * limit).limit(limit)
+        products_list = []
+        for product in products:
+            product['_id'] = str(product['_id'])
+            products_list.append(product)
+
+        response = {
+            "status": 200,
+            "message": "Success",
+            "total_count": total_count,
+            "products": products_list
+        }
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify({"status": 400, "message": "Failed", "error": str(e)}), 400
 
 
 if __name__ == "__main__":
